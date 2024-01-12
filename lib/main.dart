@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:relay/connectivity_check.dart';
 import 'package:relay/relay.dart';
 
 void main() {
@@ -46,10 +47,15 @@ class MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: SingleChildScrollView(
-        child: Center(
-          child: Text(
-            "To tcpClient : $message",
-          ),
+        child: Column(
+          children: [
+            const ConnectivityPage(title: "Connectivity Page"),
+            Center(
+              child: Text(
+                "To tcpClient : $message",
+              ),
+            ),
+          ],
         ),
       ),
     );
