@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class MyWebSocketClient {
@@ -20,7 +19,6 @@ class MyWebSocketClient {
 
   void handleWebSocketData(dynamic data) {
     String request = String.fromCharCodes(data);
-    print(request);
     if (request.startsWith('CONNECT ')) {
       _handleConnectRequest(request);
     } else {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:relay/connectivity_check.dart';
-import 'package:relay/relay.dart';
+import 'package:relay/my_web_socket_client.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,13 +31,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-  late MyWebSocketClient _webSocketClient;
+  late final List<MyWebSocketClient> _webSocketClients = [];
   String message = "";
 
   @override
   void initState() {
     super.initState();
-    _webSocketClient = MyWebSocketClient('ws://lively-field-7351.sharif-ghazzawi.workers.dev/websocket');
+    initWebSocketClients(4);
+  }
+
+  void initWebSocketClients(int numberOfClients){
+    for (int i = 1; i <= numberOfClients; i++) {
+      String url = 'ws://localhost:7001'; // Modify the URL as needed
+      MyWebSocketClient client = MyWebSocketClient(url);
+      _webSocketClients.add(client);
+    }
   }
 
   @override
@@ -63,7 +71,9 @@ class MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _webSocketClient.dispose();
+    for (var client in _webSocketClients) {
+      client.dispose();
+    }
     super.dispose();
   }
 }
