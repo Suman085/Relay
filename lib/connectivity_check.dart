@@ -1,48 +1,21 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// ignore_for_file: public_member_api_docs
-
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class ConnectivityPage extends StatefulWidget {
-  const ConnectivityPage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  State<ConnectivityPage> createState() => _ConnectivityPageState();
-}
-
-class _ConnectivityPageState extends State<ConnectivityPage> {
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+class ConnectivityListener {
   final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  late StreamController<ConnectivityResult> _controller;
 
-  @override
-  void initState() {
-    super.initState();
-    initConnectivity();
-
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+  ConnectivityListener() {
+    _controller = StreamController<ConnectivityResult>.broadcast();
+    _initConnectivity();
   }
 
-  @override
-  void dispose() {
-    _connectivitySubscription.cancel();
-    super.dispose();
-  }
+  Stream<ConnectivityResult> get connectivityStream => _controller.stream;
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initConnectivity() async {
+  Future<void> _initConnectivity() async {
     late ConnectivityResult result;
-    // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       result = await _connectivity.checkConnectivity();
     } on PlatformException catch (e) {
@@ -50,25 +23,18 @@ class _ConnectivityPageState extends State<ConnectivityPage> {
       return;
     }
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) {
-      return Future.value(null);
+    if (!_controller.isClosed) {
+      _controller.add(result);
     }
 
-    return _updateConnectionStatus(result);
-  }
-
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    setState(() {
-      _connectionStatus = result;
+    _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
+      if (!_controller.isClosed) {
+        _controller.add(result);
+      }
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-        child: Text('Connection Status: ${_connectionStatus.toString()}'));
+  void dispose() {
+    _controller.close();
   }
 }

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:relay/connectivity_check.dart';
 import 'package:relay/my_web_socket_client.dart';
@@ -8,6 +11,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -26,18 +30,24 @@ class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
 
+
   @override
   MyHomePageState createState() => MyHomePageState();
 }
 
 class MyHomePageState extends State<MyHomePage> {
   late final List<MyWebSocketClient> _webSocketClients = [];
+  late ConnectivityListener _connectivityListener;
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   String message = "";
 
   @override
   void initState() {
     super.initState();
     initWebSocketClients(4);
+    _connectivityListener = ConnectivityListener();
+    _connectivitySubscription =
+        _connectivityListener.connectivityStream.listen(_updateConnectionStatus);
   }
 
   void initWebSocketClients(int numberOfClients){
@@ -57,7 +67,6 @@ class MyHomePageState extends State<MyHomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const ConnectivityPage(title: "Connectivity Page"),
             Center(
               child: Text(
                 "To tcpClient : $message",
@@ -69,11 +78,38 @@ class MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _updateConnectionStatus(ConnectivityResult result) {
+    // Handle the connectivity result, update UI, or take actions as needed
+    // For example, you can set a state variable to display the connectivity status.
+    print('Connection Status: $result');
+    // switch(result.name){
+    //   case result.
+    // }
+   switch(result){
+     case ConnectivityResult.wifi:
+     // TODO: Handle this case.
+     case ConnectivityResult.mobile:
+       // TODO: Handle this case.
+     case ConnectivityResult.bluetooth:
+       // TODO: Handle this case.
+     case ConnectivityResult.ethernet:
+       // TODO: Handle this case.
+     case ConnectivityResult.none:
+       // TODO: Handle this case.
+     case ConnectivityResult.vpn:
+       // TODO: Handle this case.
+     case ConnectivityResult.other:
+       // TODO: Handle this case.
+   }
+  }
+
   @override
   void dispose() {
     for (var client in _webSocketClients) {
       client.dispose();
     }
+    _connectivitySubscription.cancel();
+    _connectivityListener.dispose();
     super.dispose();
   }
 }
